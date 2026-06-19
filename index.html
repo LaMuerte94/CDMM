@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Paris Coupe du Monde 2026</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══ CANVAS DE FOND ═══ -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- ═══ DRAPEAUX FLOTTANTS GLOBAUX ═══ -->
+<div id="floatingFlags" class="floating-flags-layer"></div>
+
+<!-- ═══ PAGE DE CONNEXION ═══ -->
+<div id="loginScreen">
+    <div class="login-flags-ticker">
+        <div class="ticker-inner" id="loginTicker"></div>
+    </div>
+
+    <div class="login-box">
+        <div class="login-top-bar"></div>
+
+        <div class="login-trophy-zone">
+            <div class="login-trophy">🏆</div>
+            <div class="trophy-glow"></div>
+            <span class="ring r1"></span>
+            <span class="ring r2"></span>
+            <span class="ring r3"></span>
+        </div>
+
+        <div class="login-title-block">
+            <h1>COUPE DU MONDE</h1>
+            <div class="login-year">
+                <span>2</span><span>0</span><span>2</span><span>6</span>
+            </div>
+            <p class="login-sub">🇺🇸 🇨🇦 🇲🇽 &nbsp;·&nbsp; Grille de Paris</p>
+        </div>
+
+        <!-- Bandeau drapeaux dans la box -->
+        <div class="login-flags-strip" id="loginFlagsStrip"></div>
+
+        <!-- Formulaire joueur -->
+        <div id="playerLoginForm" class="login-form">
+            <div class="form-group">
+                <label><span class="lbl-icon">👤</span> Votre nom</label>
+                <div class="select-wrap">
+                    <select id="loginName"><option value="">— Choisissez votre nom —</option></select>
+                    <span class="sel-arrow">▾</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><span class="lbl-icon">🔑</span> Code secret</label>
+                <div class="input-wrap">
+                    <input type="password" id="loginCode" placeholder="••••••"
+                           onkeypress="if(event.key==='Enter')login()">
+                    <span class="inp-icon">🔒</span>
+                </div>
+            </div>
+            <button onclick="login()" class="btn-login">
+                <span>🚀</span><span>SE CONNECTER</span>
+                <div class="btn-shine"></div>
+            </button>
+            <div id="loginError" class="login-error hidden">❌ Nom ou code incorrect !</div>
+        </div>
+
+        <!-- Zone admin cachée -->
+        <div id="adminLoginZone" class="admin-zone hidden">
+            <div class="admin-zone-title">👑 Connexion Administrateur</div>
+            <div class="form-group">
+                <label><span class="lbl-icon">🔒</span> Identifiant</label>
+                <div class="input-wrap">
+                    <input type="text" id="adminLoginId" placeholder="Identifiant"
+                           onkeypress="if(event.key==='Enter')loginAdmin()">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+                <label><span class="lbl-icon">🔑</span> Mot de passe</label>
+                <div class="input-wrap">
+                    <input type="password" id="adminLoginPwd" placeholder="••••••"
+                           onkeypress="if(event.key==='Enter')loginAdmin()">
+                </div>
+            </div>
+            <button onclick="loginAdmin()" class="btn-login btn-admin" style="margin-top:12px">
+                <span>👑</span><span>ACCÈS ADMIN</span>
+                <div class="btn-shine"></div>
+            </button>
+            <div id="adminLoginError" class="login-error hidden">❌ Identifiant ou mot de passe incorrect !</div>
+        </div>
+
+        <div class="login-footer">
+            <p>Pas de code ? Contactez l'administrateur</p>
+            <a onclick="toggleAdminZone()" id="adminToggleLink">⚙️ Accès administrateur</a>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ APPLICATION ═══ -->
+<div id="mainApp" class="hidden">
+
+    <!-- Header avec drapeaux ticker -->
+    <header id="mainHeader">
+        <div class="header-bg"></div>
+        <!-- Ticker drapeaux header -->
+        <div class="header-flags-ticker">
+            <div class="ticker-inner" id="headerTicker"></div>
+        </div>
+        <div class="header-main">
+            <div class="header-left">
+                <span class="h-trophy">🏆</span>
+                <div class="h-titles">
+                    <span class="h-title">COUPE DU MONDE 2026</span>
+                    <span class="h-sub">Grille de Paris</span>
+                </div>
+                <div id="userBadge"></div>
+                <div id="saveStatus" class="save-status">
+                    <span id="saveStatusIcon">☁️</span>
+                    <span id="saveStatusText">Sauvegardé</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button onclick="app.exportData()" class="btn-hdr admin-only hidden" title="Exporter">📥</button>
+                <button onclick="document.getElementById('importFile').click()" class="btn-hdr admin-only hidden" title="Importer">📤</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="app.importData(event)">
+                <button onclick="logout()" class="btn-logout-hdr">🚪 Déconnexion</button>
+            </div>
+        </div>
+        <nav class="main-nav">
+            <button class="nav-tab active" data-tab="bydate"    onclick="app.showTab('bydate')">   <span class="ni">📅</span><span class="nl">Par date</span>          </button>
+            <button class="nav-tab"        data-tab="today"     onclick="app.showTab('today')">    <span class="ni">📍</span><span class="nl">Aujourd'hui</span>       </button>
+            <button class="nav-tab"        data-tab="matches"   onclick="app.showTab('matches')">  <span class="ni">⚽</span><span class="nl">Phase de Groupes</span>  </button>
+            <button class="nav-tab"        data-tab="playoffs"  onclick="app.showTab('playoffs')"> <span class="ni">🏅</span><span class="nl">Phases finales</span>    </button>
+            <button class="nav-tab"        data-tab="champion"  onclick="app.showTab('champion')"> <span class="ni">🏆</span><span class="nl">Champion</span>          </button>
+            <button class="nav-tab"        data-tab="ranking"   onclick="app.showTab('ranking')">  <span class="ni">📊</span><span class="nl">Classement</span>        </button>
+            <button class="nav-tab"        data-tab="stats"     onclick="app.showTab('stats')">    <span class="ni">📈</span><span class="nl">Stats</span>              </button>
+            <button class="nav-tab"        data-tab="wall"      onclick="app.showTab('wall')">     <span class="ni">📰</span><span class="nl">Mur</span>                </button>
+            <button class="nav-tab"        data-tab="challenges" onclick="app.showTab('challenges')"><span class="ni">⚔️</span><span class="nl">Défis</span>            </button>
+            <button class="nav-tab"        data-tab="avatar"    onclick="app.showTab('avatar')">   <span class="ni">🎌</span><span class="nl">Mon avatar</span>        </button>
+            <button class="nav-tab admin-only hidden" data-tab="setup" onclick="app.showTab('setup')"><span class="ni">⚙️</span><span class="nl">Admin</span></button>
+        </nav>
+    </header>
+
+    <main class="main-content">
+
+        <!-- ── Par date ── -->
+        <div id="bydate" class="tab-pane active">
+            <div class="pane-filters">
+                <div class="filter-row">
+                    <label class="filter-lbl">📅 Date</label>
+                    <div class="select-wrap sm">
+                        <select id="dateFilter" onchange="app.filterByDate()"><option value="all">Toutes les dates</option></select>
+                        <span class="sel-arrow">▾</span>
+                    </div>
+                </div>
+                <div id="byDateInfo" class="pane-info"></div>
+            </div>
+            <div id="byDateList" class="matches-list"></div>
+        </div>
+
+        <!-- ── Aujourd'hui (résumé du jour, heure FR) ── -->
+        <div id="today" class="tab-pane">
+            <div id="todayContent"></div>
+        </div>
+
+        <!-- ── Phase de Groupes ── -->
+        <div id="matches" class="tab-pane">
+            <div class="pane-filters">
+                <div class="filter-row">
+                    <label class="filter-lbl">📂 Groupe</label>
+                    <div class="select-wrap sm">
+                        <select id="groupFilter" onchange="app.filterMatches()"><option value="all">Tous les groupes</option></select>
+                        <span class="sel-arrow">▾</span>
+                    </div>
+                </div>
+                <div id="matchInfo" class="pane-info"></div>
+            </div>
+            <div id="matchesList" class="matches-list"></div>
+        </div>
+
+        <!-- ── Phases finales ── -->
+        <div id="playoffs" class="tab-pane">
+            <div class="pane-filters">
+                <div class="filter-row">
+                    <label class="filter-lbl">🏆 Phase</label>
+                    <div class="select-wrap sm">
+                        <select id="phaseFilter" onchange="app.filterPlayoffs()">
+                            <option value="all">Toutes les phases</option>
+                            <option value="32es de finale">32es de finale</option>
+                            <option value="16es de finale">16es de finale</option>
+                            <option value="Quarts de finale">Quarts de finale</option>
+                            <option value="Demi-finales">Demi-finales</option>
+                            <option value="Match 3e place">Match 3e place</option>
+                            <option value="FINALE">FINALE</option>
+                        </select>
+                        <span class="sel-arrow">▾</span>
+                    </div>
+                </div>
+            </div>
+            <div id="playoffsList" class="matches-list"></div>
+        </div>
+
+        <!-- ── Champion du Monde ── -->
+        <div id="champion" class="tab-pane">
+            <div id="championContent"></div>
+        </div>
+
+        <!-- ── Classement ── -->
+        <div id="ranking" class="tab-pane">
+            <div class="ranking-hero">
+                <span class="rk-trophy">🏆</span>
+                <h2>Classement Général</h2>
+            </div>
+            <div id="statsSummary" class="stats-summary"></div>
+            <div id="rankingTable"></div>
+        </div>
+
+        <!-- ── Stats & Badges ── -->
+        <div id="stats" class="tab-pane">
+            <div id="statsContent"></div>
+        </div>
+
+        <!-- ── Mur des pronostics ── -->
+        <div id="wall" class="tab-pane">
+            <div id="wallContent"></div>
+        </div>
+
+        <!-- ── Défis entre joueurs ── -->
+        <div id="challenges" class="tab-pane">
+            <div id="challengesContent"></div>
+        </div>
+
+        <!-- ── Mon Avatar (tous les joueurs) ── -->
+        <div id="avatar" class="tab-pane">
+            <div id="avatarContent"></div>
+        </div>
+
+        <!-- ── Admin ── -->
+        <div id="setup" class="tab-pane">
+            <div class="setup-hero">⚙️ Administration</div>
+
+            <div class="setup-card">
+                <div class="scard-header">
+                    <span>👥</span> Gestion des joueurs
+                    <button onclick="app.addPlayer()" class="btn-add-player">➕ Ajouter</button>
+                </div>
+                <div id="playersSetup" class="players-grid"></div>
+                <button onclick="app.savePlayersSetup()" class="btn-primary" style="margin-top:16px">💾 Sauvegarder les joueurs</button>
+            </div>
+
+            <div class="setup-card">
+                <div class="scard-header"><span>🔑</span> Identifiants administrateur</div>
+                <p class="setup-info">Modifiez l'identifiant et le mot de passe admin</p>
+                <div class="admin-creds">
+                    <div class="form-group"><label>Identifiant</label><input type="text"   id="newAdminId"   placeholder="Identifiant" class="setup-input"></div>
+                    <div class="form-group"><label>Mot de passe</label><input type="text" id="newAdminCode" placeholder="Mot de passe" class="setup-input"></div>
+                    <button onclick="app.saveAdminCode()" class="btn-primary">💾 Sauvegarder</button>
+                </div>
+            </div>
+
+            <div class="setup-card">
+                <div class="scard-header"><span>🎌</span> Drapeaux joueurs (Admin)</div>
+                <p class="setup-info">Modifiez l'avatar drapeau de chaque joueur</p>
+                <div id="adminFlagsGrid" class="admin-flags-grid"></div>
+            </div>
+
+            <div class="setup-card">
+                <div class="scard-header"><span>🏆</span> Champion du Monde — Résultat officiel</div>
+                <p class="setup-info">Définissez le pays vainqueur de la Coupe du Monde 2026 pour attribuer les 10 points</p>
+                <div class="champion-admin-zone">
+                    <div class="champion-admin-select">
+                        <label class="filter-lbl">🏆 Pays vainqueur</label>
+                        <div class="select-wrap">
+                            <select id="adminChampionSelect">
+                                <option value="">— Choisir le champion —</option>
+                            </select>
+                            <span class="sel-arrow">▾</span>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+                        <button onclick="app.saveChampionResult()" class="btn-primary">🏆 Valider le champion</button>
+                        <button onclick="app.clearChampionResult()" class="btn-danger">🗑️ Effacer</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setup-card">
+                <div class="scard-header"><span>🔓</span> Déverrouillages globaux</div>
+                <div class="unlock-grid">
+                    <button onclick="app.unlockAll('matches')"  class="btn-unlock">🔓 Déverrouiller Phase de Groupes</button>
+                    <button onclick="app.unlockAll('playoffs')" class="btn-unlock">🔓 Déverrouiller Playoffs</button>
+                    <button onclick="app.unlockAll('champion')" class="btn-unlock">🔓 Déverrouiller Paris Champion</button>
+                    <button onclick="app.unlockAll('results')"  class="btn-unlock btn-unlock-danger">🗑️ Effacer tous les résultats</button>
+                </div>
+            </div>
+
+            <div class="setup-card">
+                <div class="scard-header"><span>📖</span> Règles du jeu</div>
+                <div class="rules-list">
+                    <div class="rule-row"><span class="pts-badge pts3">3 pts</span><span>Score exact</span></div>
+                    <div class="rule-row"><span class="pts-badge pts1">1 pt</span><span>Bon vainqueur / nul</span></div>
+                    <div class="rule-row"><span class="pts-badge pts0">0 pt</span><span>Mauvais pronostic</span></div>
+                    <div class="rule-row"><span class="pts-badge pts10">10 pts</span><span>🏆 Champion du Monde : bon pays</span></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Modal suppression -->
+<div id="deleteModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <div class="modal-icon">⚠️</div>
+        <h3>Supprimer le joueur ?</h3>
+        <p id="deleteModalMsg"></p>
+        <div class="modal-actions">
+            <button onclick="app.confirmDeletePlayer()" class="btn-danger">🗑️ Supprimer</button>
+            <button onclick="app.closeDeleteModal()" class="btn-secondary">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<!-- Chat global -->
+<div id="chatFab" class="chat-fab hidden" onclick="app.toggleChat()">
+    <span class="chat-fab-icon">💬</span>
+    <span id="chatUnreadBadge" class="chat-unread hidden">0</span>
+</div>
+
+<div id="chatPanel" class="chat-panel hidden">
+    <div class="chat-panel-header">
+        <div class="chat-header-left">
+            <span class="chat-header-icon">💬</span>
+            <div>
+                <div class="chat-header-title">Chat des joueurs</div>
+                <div class="chat-header-sub">Coupe du Monde 2026</div>
+            </div>
+        </div>
+        <button onclick="app.toggleChat()" class="chat-close-btn">✖️</button>
+    </div>
+    <div id="chatMessages" class="chat-messages"></div>
+    <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Écrire un message…" maxlength="300"
+               onkeypress="if(event.key==='Enter')app.sendChatMessage()">
+        <button onclick="app.sendChatMessage()" class="chat-send-btn">🚀</button>
+    </div>
+</div>
+
+<!-- Toast container -->
+<div id="toastContainer"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
