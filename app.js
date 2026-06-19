@@ -5,7 +5,7 @@
 
 const GITHUB_TOKEN  = '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';
 const GITHUB_OWNER  = 'LaMuerte94';
-const GITHUB_REPO   = 'coupdumonde202694';
+const GITHUB_REPO   = 'CDMM';
 const GITHUB_FILE   = 'data.json';
 const GITHUB_BRANCH = 'main';
 
