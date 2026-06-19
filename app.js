@@ -3,7 +3,7 @@
    Canvas · Drapeaux flottants · Ticker · Avatar joueur
 ════════════════════════════════════════════════════════════════ */
 
-const GITHUB_TOKEN  = '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';
+const GITHUB_TOKEN  = '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';
 const GITHUB_OWNER  = 'LaMuerte94';
 const GITHUB_REPO   = 'CDMM';
 const GITHUB_FILE   = 'data.json';
